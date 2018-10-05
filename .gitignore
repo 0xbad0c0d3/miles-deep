@@ -7,3 +7,4 @@ miles-deep
 .Trashes
 ethumbs.db
 Thumbs.db
+/cmake-build-*
