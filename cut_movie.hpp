@@ -30,8 +30,8 @@ void CutMovie( ScoreList score_list, string movie_file, vector<int> target_list,
         int max_gap=2, float threshold=0.5, float min_coverage=0.4, bool do_concat=true,
         bool remove_original = true);
 
-void TagTargets( ScoreList score_list, string movie_file, string output_dir, vector<string> labels,
-        int total_targets, int min_cut, int max_gap, float threshold, float min_coverage);
+void TagTargets(string tag_file, ScoreList score_list, string movie_file, string output_dir, vector<string> labels,
+                int total_targets, int min_cut, int max_gap, float threshold, float min_coverage);
 
 string PrettyTime(int seconds);
 

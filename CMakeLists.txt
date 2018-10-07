@@ -34,7 +34,17 @@ set(USE_LMDB 0)
 add_subdirectory(caffe)
 
 include_directories(caffe/include ${CMAKE_CURRENT_BINARY_DIR}/caffe/include .)
-add_executable(miles-deep miles-deep.cpp cut_movie.cpp util.cpp)
+file(GLOB CLASSES classes/*.cpp)
+file(GLOB SRCFILES *.cpp)
+list(APPEND SRCFILES ${CLASSES})
+
+add_executable(miles-deep ${SRCFILES})
+find_file(INOTIFY sys/inotify.h)
+if (INOTIFY)
+    target_compile_definitions(miles-deep -DHAS_INOTIFY_H)
+else ()
+    message("We don't have inotify ((")
+endif ()
 target_link_libraries(miles-deep caffe m stdc++ ${MILES_DEEP_LIBRARIES})
 
 add_dependencies(miles-deep caffe)
