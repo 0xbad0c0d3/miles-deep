@@ -183,16 +183,12 @@ void Cutter::CutMovie() {
     string movie_directory = getDirectory(movie_file);
 
     //will come from input
-    vector<int> target_on(total_targets, 0);
+    vector<int> target_on(static_cast<unsigned long>(total_targets), 0);
     for (int i : target_list)
         target_on[i] = 1;
 
 
-    string mkdir_command = "mkdir -p " + temp_base;
-    if (system(mkdir_command.c_str())) {
-        cerr << "Error making directory: " << temp_base << endl;
-        exit(EXIT_FAILURE);
-    }
+    mkdir_recursive(temp_base.c_str());
 
     //init
     CutList cut_list;
@@ -208,7 +204,7 @@ void Cutter::CutMovie() {
         vals[i] = scoreMax(score_list[i]);
     }
 
-    int total = findTheCuts(score_list.size(), winners, vals, target_on, "", &cut_list);
+    int total = findTheCuts(static_cast<int>(score_list.size()), winners, vals, target_on, "", &cut_list);
     cout << "Total cut length: " << PrettyTime(total) << endl;
     //make the cuts
     if (!cut_list.empty()) {
@@ -259,7 +255,7 @@ void Cutter::CutMovie() {
         part_file.close();
 
         //default behavior (output cut where input movie is located)
-        if (output_dir == "")
+        if (output_dir.empty())
             output_dir = movie_directory;
 
 
@@ -294,19 +290,16 @@ void Cutter::CutMovie() {
 
     //ask about removing original and only keeping cut
     if (remove_original && did_concat && queryYesNo()) {
-        string rm_cmd = "rm -rf \"" + movie_file + "\"";
-        if (system(rm_cmd.c_str())) {
-            cerr << "Error removing input movie: " << rm_cmd << endl;
+        if (remove(movie_file.c_str()) == -1) {
+            cerr << "Error removing input movie: " << errno << endl;
             exit(EXIT_FAILURE);
         }
     }
 
 
     //clean up cuts directory and cuts.txt file
-    string clean_cmd = "rm -rf " + temp_dir + sep + "cuts.txt " + temp_base;
-    if (system(clean_cmd.c_str())) {
-        cerr << "Error cleaning up temporary cut piece files in: "
-             << clean_cmd << endl;
+    if (cleanDir(temp_dir, "cuts.txt") && cleanDir(temp_base)) {
+        cerr << "Error cleaning up temporary cut piece files" << endl;
         exit(EXIT_FAILURE);
     }
 }

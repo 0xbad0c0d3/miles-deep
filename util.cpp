@@ -11,7 +11,6 @@
 #include <algorithm>
 #include <fstream>
 #include <string>
-#include <regex>
 #include "sys/stat.h"
 #include "version.h"
 
@@ -21,14 +20,12 @@ using namespace std;
 
 extern int global_ffmpeg_done;
 
-static std::regex filter_movie_filename_re("([;<>|\"])");
-
 float scoreMax(vector<float> x) {
     return *max_element(x.begin(), x.end());
 }
 
 int scoreArgMax(vector<float> x) {
-    return distance(x.begin(), max_element(x.begin(), x.end()));
+    return static_cast<int>(distance(x.begin(), max_element(x.begin(), x.end())));
 }
 
 string getFileName(const string &s) {
@@ -173,9 +170,8 @@ void CreateScreenShots(string movie_file, string screenshot_directory) {
         cerr << "Could not create screenshots directory: " << screenshot_directory << endl;
         exit(EXIT_FAILURE);
     }
-    string movie_file_filtered = std::regex_replace(movie_file, filter_movie_filename_re, "\\$1");
 
-    string screenshot_cmd = "ffmpeg -loglevel 8 -i \"" + movie_file_filtered + "\" -vf fps=1 -q:v 1 " +
+    string screenshot_cmd = "ffmpeg -loglevel 8 -i \"" + movie_file + "\" -vf fps=1 -q:v 1 " +
                             screenshot_directory + IMAGE_FORMAT;
     if (system(screenshot_cmd.c_str())) {
         cerr << "Error getting screenshots from: " << movie_file << endl;
@@ -188,7 +184,7 @@ void CreateScreenShots(string movie_file, string screenshot_directory) {
 
 void PrintUsage(char *prog_name) {
     cout << "REV: " << MILES_DEEP_REVISION << endl;
-    cout << "Usage: " << prog_name << " [-t target|-x|-a|f <file>] [-b batch_size] [-o output_dir] [options] movie_file"
+    cout << "Usage: " << prog_name << " [-t target|-x|-a|-f <file>] [-b batch_size] [-o output_dir] [options] movie_file"
          << endl;
     cout << "-h\tPrint more help information about options" << endl;
 }
@@ -204,6 +200,7 @@ void PrintHelp() {
     cout << "-b\tBatch size (default: 32) - decrease if you run out of memory" << endl;
     cout << "-o\tOutput directory (default: same as input)" << endl;
     cout << "-d\tTemporary Directory (default: /tmp)" << endl;
+    cout << "--\tTemporary Directory (default: /tmp)" << endl;
     cout << endl;
     cout << "Cutting Options" << endl;
     cout << "-u\tMinimum cUt in seconds (default: 4)" << endl;

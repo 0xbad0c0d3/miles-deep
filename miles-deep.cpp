@@ -18,6 +18,7 @@
 #include <fstream>
 #include <boost/thread.hpp>
 #include <getopt.h>
+#include <regex>
 
 #ifdef __APPLE__
 #include <CoreServices/CoreServices.h>
@@ -34,6 +35,8 @@
 using namespace caffe;  // NOLINT(build/namespaces)
 using namespace std;
 using std::string;
+
+static std::regex filter_movie_filename_re("([;<>|\"])");
 
 int global_ffmpeg_done = -1;
 
@@ -163,7 +166,7 @@ int main(int argc, char **argv) {
         temp_directory = temp_directory.substr(0, temp_directory.length() - 1);
     }
     screenshot_directory = temp_directory + screenshot_directory;
-    movie_file = argv[optind];
+    movie_file = std::regex_replace(argv[optind], filter_movie_filename_re, "\\$1");
 
 
     //keep Caffe quiet
