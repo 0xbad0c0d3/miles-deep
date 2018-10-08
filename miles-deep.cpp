@@ -172,6 +172,7 @@ int main(int argc, char **argv) {
     }
 
     global_ffmpeg_done = MAX_IMG_IDX;
+    cleanDir(screenshot_directory);
     boost::thread first(CreateScreenShots, movie_file, screenshot_directory);
     //first.join();  //uncomment to make predictions wait for screenshots
 
@@ -182,14 +183,7 @@ int main(int argc, char **argv) {
     //loop till all screenshots have been
     //extracted and classified
     //wait for screenshots from ffmpeg thread
-#ifdef HAS_INOTIFY_H
-    inotify_h = inotify_init();
-    if(inotify_h == -1){
-        cerr << "Error initilizing INOTIFY: " << std::strerror(errno) << endl;
-        exit(EXIT_FAILURE);
-    }
-    event = (inotify_event*)malloc(INOTIFY_EVENT_BUFFER);
-#endif
+
     while (true) {
         vector<cv::Mat> imgs;
         //fill a batch with screenshots to classify
