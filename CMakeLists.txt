@@ -11,7 +11,7 @@ add_definitions(-DUSE_OPENCV)
 add_definitions(-DNDEBUG)
 add_definitions(-DCPU_ONLY)
 
-find_program(FFMPEG ffmpeg)
+find_program(FFMPEG ffmpeg PATHS /usr/local/bin /usr/bin/ /bin /usr/local/sbin /usr/sbin /sbin /opt/ffmpeg)
 if (NOT FFMPEG)
     message(FATAL_ERROR "ffmpeg not found")
 else ()
