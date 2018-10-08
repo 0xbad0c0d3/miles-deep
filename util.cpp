@@ -13,6 +13,7 @@
 #include <string>
 #include "sys/stat.h"
 #include "version.h"
+#include <string.h>
 
 #include "util.hpp"
 
