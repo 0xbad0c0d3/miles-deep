@@ -296,7 +296,8 @@ int main(int argc, char **argv) {
     cutter->temp_dir = temp_directory;
     cutter->max_gap = max_gap;
     cutter->min_cut = min_cut;
-    cutter->min_coverage = (float)min_coverage;
+    cutter->threshold = static_cast<float>(min_score);
+    cutter->min_coverage = static_cast<float>(min_coverage);
     cutter->score_list = score_list;
 
     if (auto_tag) {
