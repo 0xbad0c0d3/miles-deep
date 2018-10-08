@@ -45,12 +45,7 @@ file(GLOB SRCFILES *.cpp)
 list(APPEND SRCFILES ${CLASSES})
 
 add_executable(miles-deep ${SRCFILES})
-find_file(INOTIFY sys/inotify.h)
-if (INOTIFY)
-    target_compile_definitions(miles-deep PUBLIC -DHAS_INOTIFY_H)
-else ()
-    message("We don't have inotify ((")
-endif ()
+
 target_link_libraries(miles-deep caffe m stdc++ ${MILES_DEEP_LIBRARIES})
 
 add_dependencies(miles-deep caffe)

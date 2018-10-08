@@ -159,7 +159,7 @@ bool mkdir_recursive(const char *dir) {
             *p = '/';
         }
     }
-    return rv == 0 && mkdir(tmp, S_IRWXU) == 0;
+    return rv == 0 && (is_dir(tmp) ? true : (mkdir(tmp, S_IRWXU) == 0));
 }
 
 void CreateScreenShots(string movie_file, string screenshot_directory) {
@@ -238,7 +238,7 @@ vector<string> allExceptOther(vector<string> labels) {
 }
 
 bool cleanDir(string path, string mask) {
-    bool result = false;
+    bool result;
     DIR *dir;
     dirent *ent;
     if ((dir = opendir(path.c_str())) != nullptr) {
@@ -249,12 +249,14 @@ bool cleanDir(string path, string mask) {
                 if (ent->d_type == DT_DIR) {
                     cleanDir(filePath, mask);
                 } else {
-                    remove(filePath);
+                    int removed = remove(filePath);
+                    cout << "Deleting file " << filePath << ": " << (removed == 0) << endl;
                 }
                 free(filePath);
             }
         }
         closedir(dir);
+        cout << "Deleting dir " << path << endl;
         result = remove(path.c_str()) == 0;
     } else {
         cerr << "Could not open directory: " << path << endl;

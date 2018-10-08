@@ -13,22 +13,14 @@
 #include <sstream>
 #include <utility>
 #include <vector>
+#include <cerrno>
+#include <cstring>
 #include <stdlib.h>
 #include <unistd.h>
 #include <fstream>
 #include <boost/thread.hpp>
 #include <getopt.h>
 #include <regex>
-
-#ifdef __APPLE__
-#include <CoreServices/CoreServices.h>
-#else
-    #ifdef HAS_INOTIFY_H
-    #include <sys/inotify.h>
-    #include <sys/select.h>
-    #define INOTIFY_EVENT_BUFFER sizeof(struct inotify_event) + NAME_MAX + 1
-    #endif
-#endif
 
 #include "classes/Classifier.h"
 
@@ -40,29 +32,16 @@ static std::regex filter_movie_filename_re("([;<>|\"])");
 
 int global_ffmpeg_done = -1;
 
-#ifndef HAS_INOTIFY_H
-
 inline bool FileExists(const std::string &name) {
     ifstream f(name.c_str());
     return f.good();
 }
 
-#endif
-
 int main(int argc, char **argv) {
     int batch_size = 32;
     int MAX_IMG_IDX = 99999;
     int report_interval = 100;
-#ifdef APPLE
-
-#endif
-#ifndef HAS_INOTIFY_H
     int sleep_time = 1;
-#else
-    int inotify_h;
-    struct inotify_event *event __attribute__ ((aligned(8)));
-    fd_set event_waiter;
-#endif
     int min_cut = 4;
     int max_gap = 2;
     double min_score = 0.5;
@@ -206,7 +185,7 @@ int main(int argc, char **argv) {
 #ifdef HAS_INOTIFY_H
     inotify_h = inotify_init();
     if(inotify_h == -1){
-        cerr << "Error initilizing INOTIFY: " << errno << endl;
+        cerr << "Error initilizing INOTIFY: " << std::strerror(errno) << endl;
         exit(EXIT_FAILURE);
     }
     event = (inotify_event*)malloc(INOTIFY_EVENT_BUFFER);
@@ -231,7 +210,6 @@ int main(int argc, char **argv) {
             string the_image_path = screenshot_directory + the_image;
 
             //wait for screenshots from ffmpeg thread
-#ifndef HAS_INOTIFY_H
             while (!FileExists(the_image_path)) {
                 //if ffmpeg is done getting screenshots quit waiting
                 if (idx >= global_ffmpeg_done) {
@@ -241,27 +219,6 @@ int main(int argc, char **argv) {
                 cout << " Waiting for: " + the_image_path << endl;
                 sleep(static_cast<unsigned int>(sleep_time));
             }
-#else
-            int the_image_wd = inotify_add_watch(inotify_h, the_image_path.c_str(), IN_CLOSE|IN_ONESHOT);
-            if (the_image_wd == -1){
-                cerr << "Error adding watch for " << the_image_path << ": " << errno << endl;
-                exit(EXIT_FAILURE);
-            }
-            cout << " Waiting for: " + the_image_path << endl;
-            FD_ZERO(&event_waiter);
-            FD_SET(inotify_h, &event_waiter);
-            struct timeval timeout = {.tv_sec = 5, 0};
-            int select_rv = select(1, &event_waiter, nullptr, nullptr, &timeout);
-            CHECK(select_rv != -1) << "Waiting failed" << endl;
-            if (FD_ISSET(inotify_h, &event_waiter)){
-                read(inotify_h, event, INOTIFY_EVENT_BUFFER);
-                cout << "Image " << event->name << " is ready" << endl;
-            } else {
-                cerr << "Error waiting for " << the_image_path << endl;
-                exit(EXIT_FAILURE);
-            }
-            no_more = idx >= global_ffmpeg_done;
-#endif
 
             if (!no_more) {
                 cv::Mat img = cv::imread(the_image_path, -1);
