@@ -13,6 +13,7 @@
 #include <string>
 #include <regex>
 #include "sys/stat.h"
+#include "version.h"
 
 #include "util.hpp"
 
@@ -186,12 +187,14 @@ void CreateScreenShots(string movie_file, string screenshot_directory) {
 }
 
 void PrintUsage(char *prog_name) {
+    cout << "REV: " << MILES_DEEP_REVISION << endl;
     cout << "Usage: " << prog_name << " [-t target|-x|-a|f <file>] [-b batch_size] [-o output_dir] [options] movie_file"
          << endl;
     cout << "-h\tPrint more help information about options" << endl;
 }
 
 void PrintHelp() {
+    cout << "REV: " << MILES_DEEP_REVISION << endl;
     cout << endl;
     cout << "Main Options" << endl;
     cout << "-t\tComma separated list of the Targets to search for (default:blowjob_handjob)" << endl;

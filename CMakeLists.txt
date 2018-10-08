@@ -58,5 +58,8 @@ add_dependencies(miles-deep caffe)
 set_target_properties(miles-deep
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../bin")
-
+execute_process(COMMAND git reflog -n 1 --format=%h HEAD
+        OUTPUT_VARIABLE GIT_REVISION
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+file(WRITE version.h "#ifndef MILES_DEEP_REVISION\n#define MILES_DEEP_REVISION \"${GIT_REVISION}\"\n#endif")
 file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/../bin")

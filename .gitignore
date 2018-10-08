@@ -7,3 +7,4 @@ ethumbs.db
 Thumbs.db
 /cmake-build-*
 /bin
+version.h
