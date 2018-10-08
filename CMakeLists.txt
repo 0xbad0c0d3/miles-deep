@@ -18,9 +18,8 @@ else ()
     message("ffmpeg found ${FFMPEG}")
 endif ()
 
-
 if (NOT APPLE)
-    set(BLAS Open)
+    set(BLAS "Open" CACHE STRING "Selected BLAS library")
 else ()
     find_library(VEC_LIBRARY NAMES vecLib)
     if (NOT VEC_LIBRARY)
