@@ -197,11 +197,10 @@ void PrintHelp() {
     cout << "-t\tComma separated list of the Targets to search for (default:blowjob_handjob)" << endl;
     cout << "-x\tRemove all non-sexual scenes. Same as all targets except \'other\'. Ignores -t." << endl;
     cout << "-a\tCreate a tag file with the cuts for all categories. Ignores -t and -x" << endl;
-    cout << "-f\tThe same as -a but will write result into the option argument file " << endl;
+    cout << "--autotag-file <file>, -f <file>\tThe same as -a but will write result into the option argument file " << endl;
     cout << "-b\tBatch size (default: 32) - decrease if you run out of memory" << endl;
     cout << "-o\tOutput directory (default: same as input)" << endl;
-    cout << "-d\tTemporary Directory (default: /tmp)" << endl;
-    cout << "--\tTemporary Directory (default: /tmp)" << endl;
+    cout << "--temp-directory, -d\tTemporary Directory (default: /tmp)" << endl;
     cout << endl;
     cout << "Cutting Options" << endl;
     cout << "-u\tMinimum cUt in seconds (default: 4)" << endl;
