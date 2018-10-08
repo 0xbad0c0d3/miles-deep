@@ -12,16 +12,15 @@
 #include <fstream>
 #include <string>
 
-#include "cut_movie.hpp"
+#include "Cutter.hpp"
 #include "util.hpp"
 
 using namespace std;
 
 //find the cuts using the winners and their values (returns the cut_list)
-int findTheCuts(int score_list_size, const vector<int> &winners, const vector<float> &vals,
-                const vector<int> &target_on, string target, int min_cut, int max_gap, float threshold,
-                float min_coverage,
-                CutList *cut_list) {
+int Cutter::findTheCuts(int score_list_size, const vector<int> &winners, const vector<float> &vals,
+                        const vector<int> &target_on, string target,
+                        CutList *cut_list) {
 
     int cut_start = -1;
     int gap = 0;
@@ -73,7 +72,7 @@ int findTheCuts(int score_list_size, const vector<int> &winners, const vector<fl
             cut_start = i;
             gap = 0;
             val_sum = 0.0;
-            win_sum = 0.0;
+            win_sum = 0;
         }
     }
 
@@ -82,10 +81,9 @@ int findTheCuts(int score_list_size, const vector<int> &winners, const vector<fl
 }
 
 
-void TagTargets(string tag_file, ScoreList score_list, string movie_file, string output_dir, vector<string> labels,
-                int total_targets, int min_cut, int max_gap, float threshold, float min_coverage) {
+void Cutter::TagTargets() {
     //path stuff with movie file
-    string tag_path = "";
+    string tag_path;
     char sep = '/';
 #ifdef _WIN32
     char  sep = '\\';
@@ -93,7 +91,7 @@ void TagTargets(string tag_file, ScoreList score_list, string movie_file, string
     string movie_base = getBaseName(getFileName(movie_file));
     string movie_directory = getDirectory(movie_file);
     string tag_movie = movie_base + ".tag";
-    if (output_dir == "") {
+    if (output_dir.empty()) {
         output_dir = movie_directory;
     }
     if (!tag_file.empty()) {
@@ -124,22 +122,22 @@ void TagTargets(string tag_file, ScoreList score_list, string movie_file, string
 
     //write header
     f << getFileName(movie_file) << ",";
-    for (int i = 0; i < labels.size(); i++)
-        f << labels[i] << ",";
+    for (const auto &label : labels)
+        f << label << ",";
     f << endl;
 
     //find the predicted cuts for each target
-    vector<int> target_time(total_targets, 0);
+    vector<int> target_time(static_cast<unsigned long>(total_targets), 0);
     CutList cut_list;
     for (int i = 0; i < total_targets; i++) {
 
-        vector<int> target_on(total_targets, 0);
+        vector<int> target_on(static_cast<unsigned long>(total_targets), 0);
         target_on[i] = 1;
 
         cout << "Target [" << labels[i] << "]" << endl;
 
-        target_time[i] = findTheCuts(score_list.size(), winners, vals, target_on, labels[i], min_cut,
-                                     max_gap, threshold, min_coverage, &cut_list);
+        target_time[i] = findTheCuts(static_cast<int>(score_list.size()), winners, vals, target_on, labels[i],
+                                     &cut_list);
 
 
         cout << "Total cut length: " << PrettyTime(target_time[i]) << endl;
@@ -159,8 +157,7 @@ void TagTargets(string tag_file, ScoreList score_list, string movie_file, string
 
     //write cutlist to tag file
     f << "label,start,end,score,coverage" << endl;
-    for (int j = 0; j < cut_list.size(); j++) {
-        Cut this_cut = cut_list[j];
+    for (const auto &this_cut : cut_list) {
         f << this_cut.label << "," << this_cut.s << "," << this_cut.e
           << "," << this_cut.score << "," << this_cut.coverage << endl;
     }
@@ -171,9 +168,7 @@ void TagTargets(string tag_file, ScoreList score_list, string movie_file, string
 }
 
 
-void CutMovie(ScoreList score_list, string movie_file, vector<int> target_list,
-              string output_dir, string temp_dir, int total_targets, int min_cut, int max_gap,
-              float threshold, float min_coverage, bool do_concat, bool remove_original) {
+void Cutter::CutMovie() {
 
     //path stuff with movie file
     char sep = '/';
@@ -189,8 +184,8 @@ void CutMovie(ScoreList score_list, string movie_file, vector<int> target_list,
 
     //will come from input
     vector<int> target_on(total_targets, 0);
-    for (int i = 0; i < target_list.size(); i++)
-        target_on[target_list[i]] = 1;
+    for (int i : target_list)
+        target_on[i] = 1;
 
 
     string mkdir_command = "mkdir -p " + temp_base;
@@ -213,11 +208,10 @@ void CutMovie(ScoreList score_list, string movie_file, vector<int> target_list,
         vals[i] = scoreMax(score_list[i]);
     }
 
-    int total = findTheCuts(score_list.size(), winners, vals, target_on,
-                            "", min_cut, max_gap, threshold, min_coverage, &cut_list);
+    int total = findTheCuts(score_list.size(), winners, vals, target_on, "", &cut_list);
     cout << "Total cut length: " << PrettyTime(total) << endl;
     //make the cuts
-    if (cut_list.size() > 0) {
+    if (!cut_list.empty()) {
         cout << "Making the cuts" << endl;
         string part_file_path = temp_dir + sep + "cuts.txt";
         ofstream part_file;

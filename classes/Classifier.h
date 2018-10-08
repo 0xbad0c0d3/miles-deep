@@ -21,7 +21,7 @@
 
 #include <fstream>
 #include <boost/thread.hpp>
-#include "cut_movie.hpp"
+#include "Cutter.hpp"
 #include "util.hpp"
 
 using namespace caffe;  // NOLINT(build/namespaces)

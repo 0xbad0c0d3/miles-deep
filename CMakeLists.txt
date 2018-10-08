@@ -57,6 +57,6 @@ add_dependencies(miles-deep caffe)
 
 set_target_properties(miles-deep
         PROPERTIES
-        ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/../bin")
+
+file(MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/../bin")

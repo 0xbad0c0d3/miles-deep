@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <boost/thread.hpp>
+#include <getopt.h>
 
 #ifdef __APPLE__
 #include <CoreServices/CoreServices.h>
@@ -80,10 +81,17 @@ int main(int argc, char **argv) {
     bool do_concat = true;
     bool remove_original = true;
 
+    /* options descriptor */
+    static struct option longopts[] = {
+            {"autotag-file",   required_argument, nullptr, 'f'},
+            {"temp-directory", required_argument, nullptr, 'd'},
+            {nullptr, 0,                          nullptr, 0}
+    };
+
     //parse command line flags
     int opt;
     bool set_all_but_other = false;
-    while ((opt = getopt(argc, argv, "f:act:b:d:o:m:ng:s:hxp:w:u:l:v:")) != -1) {
+    while ((opt = getopt_long(argc, argv, "f:act:b:d:o:m:ng:s:hxp:w:u:l:v:", longopts, nullptr)) != -1) {
         switch (opt) {
             case 'a':
                 auto_tag = true;
@@ -228,7 +236,7 @@ int main(int argc, char **argv) {
                     break;
                 }
                 cout << " Waiting for: " + the_image_path << endl;
-                sleep(sleep_time);
+                sleep(static_cast<unsigned int>(sleep_time));
             }
 #else
             int the_image_wd = inotify_add_watch(inotify_h, the_image_path.c_str(), IN_CLOSE|IN_ONESHOT);
@@ -277,20 +285,30 @@ int main(int argc, char **argv) {
 
     //Either create a file out the cuts for all targets
     //or make the cuts from the input list
+    Cutter *cutter = new Cutter;
+    cutter->movie_file = movie_file;
+    cutter->tag_file = tag_file;
+    cutter->output_dir = output_directory;
+    cutter->labels = classifier.labels_;
+    cutter->temp_dir = temp_directory;
+    cutter->max_gap = max_gap;
+    cutter->min_cut = min_cut;
+    cutter->min_coverage = (float)min_coverage;
+    cutter->score_list = score_list;
+
     if (auto_tag) {
-        TagTargets(tag_file, score_list, movie_file, output_directory, classifier.labels_,
-                   classifier.labels_.size(), min_cut, max_gap, min_score, min_coverage);
+        cutter->TagTargets();
     } else {
         //make the cuts based on the predictions
-        vector<int> target_ints;
-        for (int i = 0; i < target_list.size(); i++) {
-            int target_idx = IndexOf(target_list[i], classifier.labels_);
-            target_ints.push_back(target_idx);
+        cutter->do_concat = do_concat;
+        cutter->remove_original = remove_original;
+        for (const auto &i : target_list) {
+            int target_idx = IndexOf(i, classifier.labels_);
+            cutter->target_list.push_back(target_idx);
         }
-        CutMovie(score_list, movie_file, target_ints, output_directory, temp_directory,
-                 classifier.labels_.size(), min_cut, max_gap, min_score,
-                 min_coverage, do_concat, remove_original);
+        cutter->CutMovie();
     }
+    delete cutter;
 
     //clean up screenshots
     cleanDir(screenshot_directory);

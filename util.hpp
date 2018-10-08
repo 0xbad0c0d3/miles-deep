@@ -39,6 +39,8 @@ void PrintUsage(char *prog_name);
 
 void PrintHelp();
 
+string PrettyTime(int seconds);
+
 vector<string> Split(const string &s, char delim);
 
 vector<string> allExceptOther(vector<string> labels);
